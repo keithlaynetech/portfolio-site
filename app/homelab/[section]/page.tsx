@@ -563,31 +563,155 @@ const homelabData = {
   applications: {
     title: "Applications",
     description:
-      "Self-hosted platforms and services running throughout the environment.",
+      "A self-hosted application ecosystem spanning infrastructure, identity, security, media, personal cloud, smart home, data services, remote access, dashboards, and automation.",
     sections: [
       {
-        title: "Plex / Jellyfin",
-        content: ["Media platforms provide centralized streaming and media-library management."],
+        title: "Application Architecture",
+        content: [
+          "The application environment is intentionally modular rather than being built around one all-purpose server.",
+          "Proxmox provides the virtualization layer, Docker provides the application-container layer for many services, the UNAS Pro provides persistent storage, and the segmented UniFi network controls how applications communicate with users and with one another.",
+          "This separation makes it possible to rebuild or move an application without treating the physical server hosting it as the application itself.",
+          "Where practical, application runtime is treated as replaceable while persistent data, configuration, databases, and media are kept on appropriate storage and protected independently.",
+        ],
       },
       {
-        title: "Home Assistant",
-        content: ["Home Assistant serves as the primary smart-home automation and device-management platform."],
+        title: "Virtualization & Container Management",
+        content: [
+          "Proxmox VE provides the virtualization platform for the environment and hosts the virtual machines and Linux containers used throughout the lab.",
+          "Docker provides the application-container layer for many self-hosted services, allowing application dependencies and runtime environments to be packaged separately from the underlying operating system.",
+          "Portainer provides centralized visibility and management for Docker environments and containerized workloads.",
+          "This creates a layered model in which physical hardware provides capacity, Proxmox provides virtualization, Linux hosts provide operating-system services, and Docker provides the application runtime.",
+        ],
       },
       {
-        title: "Authentik",
-        content: ["Authentik provides centralized identity and authentication services for supported applications."],
+        title: "Network & Core Infrastructure Services",
+        content: [
+          "UniFi Network provides centralized administration of routing, switching, wireless networking, VLANs, firewall policy, connected clients, and network topology.",
+          "UniFi Protect provides the camera and video-surveillance platform used within the dedicated security-camera network segment.",
+          "AdGuard Home provides DNS filtering, local DNS services, client visibility, and DNS rewrites.",
+          "Unbound provides recursive DNS resolution behind AdGuard Home, allowing DNS resolution to remain under local control rather than depending entirely on a third-party recursive resolver.",
+          "WireGuard provides secure remote access into the environment. Remote clients are placed into the dedicated VPN VLAN and are then subject to firewall policy controlling which internal resources they may reach.",
+          "Traefik provides reverse-proxy and application-routing services, allowing web applications to be accessed through consistent DNS names and HTTPS endpoints instead of raw IP addresses and port numbers.",
+        ],
       },
       {
-        title: "Traefik",
-        content: ["Traefik provides reverse-proxy and application-routing services across the environment."],
+        title: "Identity, Credentials & Secure Access",
+        content: [
+          "Authentik provides centralized identity and authentication services for supported internal applications.",
+          "Vaultwarden provides self-hosted password and credential management.",
+          "SSL/TLS certificate management is integrated with the reverse-proxy architecture so supported internal web applications can use HTTPS and consistent certificate handling.",
+          "Apache Guacamole provides browser-based remote access to supported systems, creating a centralized administrative access path rather than requiring every management protocol to be exposed directly to endpoint devices.",
+        ],
       },
       {
-        title: "Vaultwarden",
-        content: ["Vaultwarden provides self-hosted credential and password-management capabilities."],
+        title: "Video Streaming",
+        content: [
+          "Plex provides the primary self-hosted video-media experience for the local movie and television library.",
+          "Jellyfin provides an additional open-source media-streaming platform and an alternative path for accessing locally stored video content.",
+          "Both platforms consume centrally stored media rather than tying the media library directly to the lifecycle of the virtual machine or container running the application.",
+          "Separating the application from the media library makes application rebuilds, upgrades, migrations, and experimentation less disruptive to the underlying content.",
+        ],
       },
       {
-        title: "AdGuard",
-        content: ["AdGuard Home provides DNS filtering, local DNS functionality, and client visibility while Unbound provides recursive resolution."],
+        title: "Music Streaming",
+        content: [
+          "Navidrome provides self-hosted music streaming and personal music-library access.",
+          "The service provides a private streaming experience similar in concept to a commercial music platform while keeping ownership and storage of the underlying music collection inside the home environment.",
+          "Lidarr complements the music environment by helping manage and organize the underlying music library.",
+          "The music library remains separate from the Navidrome application itself so the application can be maintained or rebuilt without making the media collection dependent on that specific runtime instance.",
+        ],
+      },
+      {
+        title: "Photo & Video Library",
+        content: [
+          "Immich provides self-hosted photo and video backup, organization, browsing, and library management.",
+          "It is used as the local replacement for a cloud photo platform such as Google Photos, keeping personal photos and videos under local storage and infrastructure control.",
+          "The application is separated from the underlying photo and video data so the media library remains independent from the lifecycle of the Immich application host.",
+          "This also makes backup, capacity planning, storage monitoring, and recovery part of the broader infrastructure design rather than leaving them entirely to a third-party cloud service.",
+        ],
+      },
+      {
+        title: "Media Automation",
+        content: [
+          "Sonarr manages television-series library automation.",
+          "Radarr manages movie-library automation.",
+          "Lidarr manages music-library automation.",
+          "Prowlarr centralizes indexer management for the media-automation stack.",
+          "qBittorrent provides download-client functionality for supported automated workflows.",
+          "NZBGet provides Usenet download-client functionality.",
+          "Gluetun provides a dedicated VPN networking layer for selected download-related containers so their traffic can be isolated from the rest of the application stack.",
+          "Together, these services reduce repetitive manual library-management work while keeping each function separated into a distinct service.",
+        ],
+      },
+      {
+        title: "Media Requests, Monitoring & Analytics",
+        content: [
+          "Overseerr provides request-management workflows for the Plex ecosystem.",
+          "Jellyseerr provides similar request-management capabilities for Jellyfin-oriented workflows.",
+          "Tautulli provides Plex usage history, activity monitoring, and statistics.",
+          "Jellystat provides usage statistics and analytics for Jellyfin.",
+          "These applications separate media consumption from media administration and provide visibility into usage without requiring routine administration directly inside the primary streaming applications.",
+        ],
+      },
+      {
+        title: "Smart Home Applications",
+        content: [
+          "Home Assistant serves as the central smart-home integration and automation platform.",
+          "Apple HomeKit provides the primary Apple-facing user experience for supported devices and automations.",
+          "Homebridge extends HomeKit compatibility to selected devices and services that do not provide native Apple Home support.",
+          "Scrypted provides camera and video integration between supported camera systems and Apple HomeKit.",
+          "Zigbee2MQTT provides integration for Zigbee-based devices and exposes those devices through MQTT.",
+          "Mosquitto provides the MQTT messaging broker used by Zigbee2MQTT and other event-driven integrations.",
+          "These services operate within the same segmented network architecture as the rest of the lab rather than placing all smart-home devices on an unrestricted trusted network.",
+        ],
+      },
+      {
+        title: "Data Services",
+        content: [
+          "PostgreSQL provides relational database services for applications that require structured persistent data.",
+          "Redis provides an in-memory data store and caching layer for applications and supporting services that benefit from fast temporary data access.",
+          "Running data services as distinct infrastructure components creates clear dependencies that can be monitored, backed up, secured, and maintained separately from the applications that consume them.",
+        ],
+      },
+      {
+        title: "Monitoring & Observability Applications",
+        content: [
+          "Prometheus collects time-series metrics from infrastructure and application targets.",
+          "Grafana provides dashboards and visualization for operational metrics and other telemetry.",
+          "Loki provides centralized log aggregation and allows logs to be explored alongside other operational data.",
+          "Alertmanager provides alert-routing and notification capabilities for conditions identified by the monitoring stack.",
+          "Uptime Kuma provides straightforward service and endpoint availability monitoring.",
+          "Blackbox Exporter performs endpoint probes to measure reachability and response behavior.",
+          "Node Exporter exposes Linux host metrics such as CPU, memory, filesystem, and operating-system information.",
+          "SNMP Exporter allows SNMP-capable infrastructure devices to provide metrics to the monitoring platform.",
+          "VictoriaMetrics provides a time-series metrics storage and query backend for longer-term operational data.",
+        ],
+      },
+      {
+        title: "Dashboards & Administration",
+        content: [
+          "Homarr provides a centralized dashboard and launch point for commonly used self-hosted services.",
+          "Portainer provides operational administration for containerized workloads.",
+          "Guacamole provides centralized browser-based access to systems that require interactive remote administration.",
+          "These tools reduce the need to remember individual IP addresses, ports, or management entry points and provide more consistent administration across the environment.",
+        ],
+      },
+      {
+        title: "Workflow Automation",
+        content: [
+          "n8n provides workflow automation across applications, APIs, infrastructure services, alerts, and future AI-driven operational workflows.",
+          "It acts as an orchestration layer capable of connecting otherwise independent systems without requiring every integration to be custom-coded from scratch.",
+          "The long-term design is to use controlled automation layers such as n8n between AI systems and infrastructure services rather than granting an AI agent unrestricted administrative access.",
+        ],
+      },
+      {
+        title: "Application Design Philosophy",
+        content: [
+          "The application platform is built around separation of concerns.",
+          "Identity, DNS, remote access, media, smart home, monitoring, storage, databases, automation, and user-facing applications remain separate services with defined responsibilities.",
+          "This adds more components than an all-in-one server, but it creates clearer dependencies, smaller failure domains, and better opportunities for monitoring, automation, backup, and security controls.",
+          "The objective is not to run the largest possible number of applications. It is to build an environment where services are intentionally placed, understood, secured, monitored, and recoverable.",
+        ],
       },
     ],
   },
@@ -595,19 +719,114 @@ const homelabData = {
   monitoring: {
     title: "Monitoring",
     description:
-      "Infrastructure health, availability, performance metrics, alerting, and operational status across the environment.",
+      "Operational monitoring focused on availability, health, resource utilization, performance, and alerting across compute, network, storage, and application services.",
     sections: [
       {
-        title: "Infrastructure Monitoring",
-        content: ["Monitoring covers compute, storage, networking, and application availability across the home lab."],
+        title: "Monitoring Strategy",
+        content: [
+          "Monitoring is intended to answer a straightforward operational question: is the environment healthy right now, and is anything moving toward failure?",
+          "The monitoring layer covers compute nodes, Linux hosts, network devices, storage, application endpoints, and supporting services.",
+          "The goal is to detect problems before they become user-visible outages and to provide enough context to identify whether the problem is at the application, operating-system, network, storage, or physical-resource layer.",
+          "Monitoring is treated separately from observability. Monitoring focuses primarily on known health indicators and conditions, while observability provides the deeper telemetry required to investigate why a system is behaving the way it is.",
+        ],
       },
       {
-        title: "Performance Metrics",
-        content: ["CPU, memory, storage, network utilization, and service performance provide insight into the health of the environment."],
+        title: "Prometheus",
+        content: [
+          "Prometheus provides the primary metrics-collection model for the monitoring environment.",
+          "It collects time-series measurements from exporters and compatible applications so infrastructure behavior can be evaluated over time rather than through one-time manual checks.",
+          "Metrics such as CPU usage, memory utilization, filesystem consumption, network behavior, service availability, and other infrastructure signals can be queried and used to drive dashboards and alerts.",
+        ],
       },
       {
-        title: "Alerting",
-        content: ["Alerts are intended to identify outages, failures, abnormal resource consumption, and other operational conditions requiring attention."],
+        title: "VictoriaMetrics",
+        content: [
+          "VictoriaMetrics provides a time-series metrics storage and query backend for operational data.",
+          "It complements the metrics-collection architecture by providing an efficient location for retaining and querying time-series information.",
+          "Longer-term metric retention allows current conditions to be compared with historical behavior, which is valuable for capacity planning, trend analysis, and troubleshooting intermittent problems.",
+        ],
+      },
+      {
+        title: "Grafana",
+        content: [
+          "Grafana provides the visualization layer for infrastructure and application metrics.",
+          "Dashboards can combine data from different parts of the environment and present them in a way that makes changes, trends, saturation, and abnormal behavior easier to recognize.",
+          "Rather than checking every system independently, Grafana provides a consolidated operational view across compute, storage, networking, and applications.",
+        ],
+      },
+      {
+        title: "Uptime Kuma",
+        content: [
+          "Uptime Kuma provides straightforward service and endpoint availability monitoring.",
+          "It is useful for answering whether a service is reachable, whether an endpoint is responding, and whether availability has changed over time.",
+          "This provides a simple service-level view that complements the lower-level resource metrics collected elsewhere in the monitoring stack.",
+        ],
+      },
+      {
+        title: "Node Exporter",
+        content: [
+          "Node Exporter exposes operating-system and hardware-related metrics from Linux systems.",
+          "This includes measurements such as CPU utilization, memory use, filesystem capacity, load, and other host-level indicators.",
+          "These metrics are important because an application can appear unhealthy when the underlying problem is actually resource exhaustion on the host running it.",
+        ],
+      },
+      {
+        title: "SNMP Exporter",
+        content: [
+          "SNMP Exporter provides a way to collect metrics from infrastructure devices that expose operational information through SNMP.",
+          "This extends the monitoring model beyond Linux servers and applications into network and infrastructure hardware.",
+          "Bringing these metrics into the same monitoring environment makes it easier to correlate application behavior with underlying network or device conditions.",
+        ],
+      },
+      {
+        title: "Blackbox Exporter",
+        content: [
+          "Blackbox Exporter performs endpoint-style probes that test services from the outside rather than relying entirely on internal application metrics.",
+          "This helps answer whether a service can actually be reached and whether the expected protocol or endpoint is responding.",
+          "That distinction matters because an application process may be running while DNS, routing, TLS, firewall policy, or the reverse proxy prevents users from successfully reaching it.",
+        ],
+      },
+      {
+        title: "Alertmanager",
+        content: [
+          "Alertmanager provides the alert-handling layer for conditions detected by the monitoring environment.",
+          "The purpose of alerting is not to generate a notification for every change. It is to identify conditions that are actionable or that indicate meaningful degradation.",
+          "Examples include service outages, abnormal resource consumption, storage thresholds, endpoint failures, or infrastructure conditions that could become outages if left unresolved.",
+          "As the environment matures, alert quality is as important as alert quantity. Excessive low-value alerts create noise and make meaningful problems easier to miss.",
+        ],
+      },
+      {
+        title: "Storage Monitoring",
+        content: [
+          "Storage monitoring is particularly important because capacity problems can develop gradually and then appear suddenly at the application layer.",
+          "The Plex filesystem reaching 100 percent utilization demonstrated why a service can technically still be running while the infrastructure beneath it has already reached a critical condition.",
+          "Storage monitoring therefore includes capacity, growth, filesystem utilization, and availability rather than relying only on whether an application is responding.",
+          "The UNAS Pro and its approximately 40 TB of usable RAID 5 capacity also make storage trend analysis and capacity forecasting increasingly important.",
+        ],
+      },
+      {
+        title: "Network Monitoring",
+        content: [
+          "Network monitoring focuses on the availability and health of the infrastructure connecting users, applications, compute, and storage.",
+          "The environment includes redundant UniFi gateways, managed switching, multiple VLANs, WireGuard remote access, DNS services, and a 10GbE SFP+ backbone.",
+          "Monitoring these dependencies helps distinguish an application outage from a routing, DNS, gateway, switching, or connectivity problem.",
+        ],
+      },
+      {
+        title: "Application Monitoring",
+        content: [
+          "Application monitoring combines endpoint availability with supporting infrastructure metrics.",
+          "A successful health check confirms that an application is reachable, but deeper host and dependency metrics are still needed to determine whether the service is operating normally.",
+          "This layered model prevents application health from being reduced to a single up-or-down result.",
+        ],
+      },
+      {
+        title: "Monitoring Design Philosophy",
+        content: [
+          "The monitoring design is intended to provide early warning, operational awareness, and actionable information rather than simply produce dashboards.",
+          "The most useful monitoring connects service health to the resources and dependencies supporting that service.",
+          "Over time, the goal is to move from reactive troubleshooting toward proactive detection of capacity, reliability, and performance issues.",
+        ],
       },
     ],
   },
@@ -615,23 +834,90 @@ const homelabData = {
   observability: {
     title: "Observability",
     description:
-      "Deeper operational insight through metrics, logs, dashboards, telemetry, and event correlation.",
+      "Deeper operational insight through centralized metrics, logs, dashboards, telemetry, historical analysis, and correlation across infrastructure and applications.",
     sections: [
       {
-        title: "Dashboards",
-        content: ["Centralized dashboards provide visibility into infrastructure and application behavior."],
+        title: "Observability Strategy",
+        content: [
+          "Observability is intended to answer questions that basic health monitoring cannot answer on its own.",
+          "Monitoring can identify that a service is slow, unavailable, or consuming unusual resources. Observability helps investigate why that behavior is occurring and what other systems changed at the same time.",
+          "The environment therefore combines metrics, logs, dashboards, historical telemetry, and infrastructure context so troubleshooting can move beyond checking individual systems one at a time.",
+        ],
       },
       {
-        title: "Logging",
-        content: ["Centralized logging provides a foundation for troubleshooting application and infrastructure behavior across multiple systems."],
+        title: "Metrics",
+        content: [
+          "Prometheus and VictoriaMetrics provide the metrics foundation for the environment.",
+          "Metrics make infrastructure behavior measurable over time and allow current conditions to be compared with prior baselines.",
+          "CPU, memory, storage, network, service, and device metrics can reveal saturation, gradual degradation, recurring patterns, and abnormal behavior that may not be obvious from an isolated point-in-time inspection.",
+        ],
       },
       {
-        title: "Telemetry",
-        content: ["Operational telemetry allows system behavior and performance to be examined over time rather than relying solely on point-in-time status."],
+        title: "Centralized Logging with Loki",
+        content: [
+          "Loki provides centralized log aggregation for supported workloads.",
+          "Centralized logs reduce the need to sign into multiple servers and manually inspect individual log files when troubleshooting a problem that crosses service boundaries.",
+          "Logs provide the event-level detail that metrics often cannot, including application errors, authentication events, service restarts, failed connections, and other operational messages.",
+          "The value increases when logs can be viewed in the same operational context as metrics and dashboards.",
+        ],
+      },
+      {
+        title: "Grafana Dashboards",
+        content: [
+          "Grafana acts as the primary visualization layer for observability data.",
+          "Dashboards can combine metrics from multiple infrastructure layers so related systems can be examined together rather than as isolated components.",
+          "A troubleshooting view can therefore include application health, compute utilization, storage behavior, and network-related measurements in one place.",
+          "The objective is not to create dashboards for appearance alone. Each dashboard should help answer a specific operational question.",
+        ],
+      },
+      {
+        title: "Historical Analysis",
+        content: [
+          "Historical telemetry makes it possible to determine whether an event is new, recurring, gradually worsening, or part of a normal pattern.",
+          "This is particularly useful for storage growth, memory pressure, CPU saturation, network utilization, and intermittent service behavior.",
+          "Instead of relying on memory or screenshots, historical data provides evidence that can be compared across days, weeks, or longer periods.",
+        ],
       },
       {
         title: "Event Correlation",
-        content: ["Combining metrics, logs, events, and infrastructure context can accelerate root-cause analysis when problems cross multiple layers of the environment."],
+        content: [
+          "Many infrastructure failures are not isolated to one component.",
+          "An application may become slow because of a saturated filesystem, a DNS issue, a failed mount, a network path problem, database latency, or pressure on the compute host.",
+          "Observability is intended to make those relationships easier to see by correlating timestamps, metrics, logs, availability changes, and infrastructure events.",
+          "The goal is to reduce mean time to identify the actual failure domain rather than repeatedly troubleshooting the application that happens to show the first visible symptom.",
+        ],
+      },
+      {
+        title: "Service Dependency Awareness",
+        content: [
+          "The lab contains many layered dependencies: applications rely on virtual machines or containers, which rely on compute hosts, networking, DNS, storage, databases, reverse proxy routing, and sometimes authentication services.",
+          "Observability becomes more useful when those dependencies are understood rather than treating every alert as an independent event.",
+          "This is especially important as the environment moves toward high availability and greater automation, because automated recovery is only valuable when the dependencies required by a recovered service are also healthy.",
+        ],
+      },
+      {
+        title: "Troubleshooting Model",
+        content: [
+          "The preferred troubleshooting model starts with symptoms and then moves through evidence rather than immediately changing configuration.",
+          "Availability checks identify what users can reach, metrics identify resource and performance conditions, logs provide event detail, and architecture knowledge identifies the dependencies that should be inspected next.",
+          "This approach reduces the temptation to solve problems by disabling security controls or making unverified configuration changes.",
+        ],
+      },
+      {
+        title: "Observability & AI",
+        content: [
+          "The observability layer will become an important data source for the planned AI Network Agent.",
+          "The initial AI design is read-oriented: the agent should be able to understand documentation and eventually consume selected monitoring and observability information to summarize health, identify anomalies, and assist with troubleshooting.",
+          "Operational actions will remain behind controlled automation and approval mechanisms rather than giving an AI model unrestricted access to infrastructure.",
+        ],
+      },
+      {
+        title: "Observability Design Philosophy",
+        content: [
+          "The objective is to make the environment explainable.",
+          "When something fails, the long-term goal is to have enough telemetry to determine what changed, which dependency was affected, when the problem began, and how the failure propagated.",
+          "That makes observability a troubleshooting and reliability capability rather than simply another collection of tools.",
+        ],
       },
     ],
   },
@@ -639,101 +925,198 @@ const homelabData = {
   automation: {
     title: "Automation / AI",
     description:
-      "Intelligent automation, AI agents, workflows, and infrastructure operations.",
+      "Workflow automation, CI/CD, infrastructure orchestration, and a controlled path toward AI-assisted operations.",
     sections: [
       {
-        title: "n8n",
-        content: ["n8n provides workflow automation capable of connecting infrastructure platforms, services, APIs, alerts, and future AI workflows."],
+        title: "Automation Strategy",
+        content: [
+          "Automation is being introduced incrementally rather than attempting to automate the entire environment at once.",
+          "The first objective is to eliminate repeatable manual tasks, make changes more consistent, and create workflows that are understandable and reversible.",
+          "The longer-term objective is to connect infrastructure, monitoring, documentation, and AI through controlled automation layers without giving any single tool unrestricted access to the environment.",
+        ],
       },
       {
-        title: "AI Agents",
-        content: ["AI agents are being explored as a way to understand infrastructure documentation, answer operational questions, analyze environment health, and eventually assist with controlled infrastructure operations."],
+        title: "n8n Workflow Automation",
+        content: [
+          "n8n provides the primary workflow-orchestration platform for the home lab.",
+          "It can connect applications, APIs, alerts, webhooks, infrastructure services, and future AI workflows into repeatable processes.",
+          "This makes n8n useful for tasks such as reacting to events, collecting data from multiple systems, sending notifications, updating documentation, or triggering controlled administrative workflows.",
+          "The platform also provides an important separation layer between a future AI agent and the systems it may eventually be allowed to interact with.",
+        ],
+      },
+      {
+        title: "GitHub & CI/CD",
+        content: [
+          "GitHub is being used as the source-control foundation for development, documentation, and automation work.",
+          "The portfolio website provides the first practical CI/CD implementation: changes are developed locally, committed to Git, pushed to GitHub, and automatically deployed through Vercel.",
+          "That workflow provides hands-on experience with version control, deployment pipelines, rollback history, change tracking, and the separation between development and production deployment.",
+          "The same principles can later be extended to home-lab configuration and automation rather than making production changes manually without version history.",
+        ],
+      },
+      {
+        title: "Public vs Private Repositories",
+        content: [
+          "Public repositories are used for sanitized examples, portfolio content, and documentation that does not expose sensitive operational details.",
+          "Private repositories are intended for configuration that may contain internal addressing, ports, DNS names, topology mappings, infrastructure scripts, and other operational information.",
+          "Passwords, API keys, tokens, private keys, and other secrets should not be committed to either public or private Git repositories.",
+          "This creates a clear boundary between demonstrating technical work publicly and protecting the information required to operate the actual environment.",
+        ],
+      },
+      {
+        title: "AI Network Agent",
+        content: [
+          "The planned AI Network Agent will begin as a read-oriented assistant rather than an autonomous infrastructure administrator.",
+          "Its first role will be to understand the lab architecture and documentation so it can answer questions about services, dependencies, network design, and operational procedures.",
+          "Later stages can incorporate selected monitoring and observability data so the agent can summarize environment health, help identify anomalies, and assist with root-cause analysis.",
+          "Any future ability to make changes will be mediated through authenticated automation workflows and explicit controls rather than unrestricted direct access to Proxmox, UniFi, storage, or other critical platforms.",
+        ],
+      },
+      {
+        title: "Conversational Operations",
+        content: [
+          "A long-term goal is to interact with the environment conversationally from a laptop rather than having to remember every management interface, command, and dashboard location.",
+          "The value is not simply natural-language control. The more important goal is to create a common interface that can retrieve documentation, summarize telemetry, explain dependencies, and eventually initiate approved workflows.",
+          "The conversational layer should remain an interface to controlled systems rather than becoming a substitute for authentication, authorization, auditability, or change management.",
+        ],
       },
       {
         title: "Network Automation",
-        content: ["Automation projects focus on monitoring, configuration management, documentation, repeatable workflows, and infrastructure operations."],
+        content: [
+          "Network automation is intended to reduce repetitive administration and provide more consistent documentation and operational workflows.",
+          "Potential use cases include inventory updates, configuration validation, monitoring responses, documentation generation, and controlled device-management workflows.",
+          "Because the network is segmented into multiple trust zones, automation must preserve the same least-privilege boundaries used by manually administered services.",
+        ],
+      },
+      {
+        title: "Infrastructure as Code",
+        content: [
+          "Infrastructure as Code is part of the upcoming roadmap rather than a completed capability.",
+          "The goal is to move more configuration into repeatable, version-controlled definitions using technologies such as Ansible, Terraform or OpenTofu, Docker Compose, GitHub Actions, and supporting scripts.",
+          "This would reduce configuration drift, improve reproducibility, and make infrastructure changes easier to review before implementation.",
+        ],
+      },
+      {
+        title: "Human Approval & Safety Boundaries",
+        content: [
+          "AI-assisted operations are intentionally designed around human approval.",
+          "Read-only access, analysis, and recommendations can be introduced earlier because they carry substantially less operational risk than direct infrastructure changes.",
+          "Actions that modify routing, firewall policy, virtualization, storage, identity, or other critical services should pass through narrowly scoped workflows with authentication, authorization, logging, and explicit approval where appropriate.",
+          "The objective is to gain the efficiency of automation without losing accountability or creating an unrestricted administrative path into the environment.",
+        ],
+      },
+      {
+        title: "Automation Design Philosophy",
+        content: [
+          "Automation should make the environment more predictable, not merely more complicated.",
+          "A useful automated process should be repeatable, observable, auditable, and easier to recover from than the manual process it replaces.",
+          "The long-term architecture therefore combines Git-based change control, n8n orchestration, monitoring and observability data, and AI assistance behind clearly defined security boundaries.",
+        ],
       },
     ],
   },
 
-
   homekit: {
     title: "Apple HomeKit",
     description:
-      "An Apple-centric smart home environment integrating HomeKit, Home Assistant, Homebridge, Scrypted, and connected devices across the segmented home network.",
+      "An Apple-centric smart home environment integrating HomeKit, Home Assistant, Homebridge, Scrypted, Zigbee2MQTT, Mosquitto, and segmented IoT networking.",
     sections: [
       {
-        title: "Architecture",
+        title: "Smart Home Architecture",
         content: [
-          "The smart home environment is built around Apple HomeKit as the primary user-facing ecosystem while Home Assistant provides broader device integration, automation, and infrastructure-level control.",
-          "This allows Apple devices such as iPhone, Apple Watch, HomePod, and iPad to provide a simple user experience while Home Assistant handles more complex automation and cross-platform integrations behind the scenes.",
-          "The architecture intentionally separates the user-facing smart-home experience from the deeper automation and integration layer.",
+          "The smart-home environment is built as a layered architecture rather than requiring every device to work natively with one platform.",
+          "Apple HomeKit provides the primary user-facing experience, while Home Assistant provides broader integration, automation, and infrastructure-level control behind the scenes.",
+          "Homebridge, Scrypted, Zigbee2MQTT, and Mosquitto extend compatibility and allow devices from different ecosystems to participate in a common smart-home environment.",
+          "This approach keeps the user experience simple while allowing the underlying system to remain flexible and more vendor-independent.",
+        ],
+      },
+      {
+        title: "Apple HomeKit",
+        content: [
+          "Apple HomeKit provides the primary Apple-facing control layer for supported smart-home devices and automations.",
+          "It allows devices and scenes to be accessed through the Apple Home experience across supported Apple devices.",
+          "The HomeKit layer is intentionally treated as the user interface rather than requiring it to perform every integration and automation function by itself.",
         ],
       },
       {
         title: "Home Assistant",
         content: [
-          "Home Assistant serves as the central smart-home automation and integration platform.",
-          "It provides support for devices and services that may not be natively supported by Apple HomeKit and allows more advanced automations, conditions, cross-platform integrations, and device control.",
-          "Home Assistant also provides a useful bridge between the smart-home environment and the broader home-lab infrastructure.",
-        ],
-      },
-      {
-        title: "HomeKit Integration",
-        content: [
-          "Apple HomeKit provides the primary user-facing interface for supported devices and automations.",
-          "Selected Home Assistant entities can be exposed into HomeKit so that Apple devices can control approved services without exposing the full Home Assistant environment.",
-          "This keeps the Apple Home experience simple while preserving Home Assistant as the deeper integration and automation layer.",
+          "Home Assistant serves as the central integration and automation platform.",
+          "It provides support for devices and services that may not be natively supported by Apple HomeKit and allows more complex automations, conditions, integrations, and device relationships.",
+          "Selected entities can be exposed into HomeKit so the Apple-facing experience remains simple while Home Assistant performs the deeper orchestration work.",
+          "Home Assistant also creates a bridge between smart-home automation and the broader home-lab environment.",
         ],
       },
       {
         title: "Homebridge",
         content: [
-          "Homebridge is used where compatibility is required for devices or services that do not provide native HomeKit support.",
-          "It allows selected unsupported devices to be presented to Apple Home as though they were native HomeKit accessories.",
-          "This extends compatibility without requiring the entire smart-home environment to depend on a single vendor ecosystem.",
+          "Homebridge extends HomeKit compatibility to selected devices and services that do not provide native Apple Home integration.",
+          "This allows existing devices to participate in the Apple Home environment without requiring every device to be replaced with hardware from a single ecosystem.",
+          "Homebridge therefore acts as a compatibility layer rather than the primary automation engine.",
         ],
       },
       {
         title: "Scrypted",
         content: [
           "Scrypted is used primarily for camera and video integration.",
-          "It provides a bridge between supported camera systems and Apple HomeKit and is useful for bringing camera feeds and related capabilities into the Apple smart-home experience.",
-          "This allows the camera platform to remain part of the broader security architecture while still being accessible through Apple Home.",
+          "It bridges supported camera systems into the Apple smart-home environment and allows camera capabilities to be consumed through Apple Home.",
+          "This keeps the camera platform integrated with the broader security architecture while still providing a convenient Apple-facing experience.",
         ],
       },
       {
-        title: "Zigbee2MQTT & Mosquitto",
+        title: "Zigbee2MQTT",
         content: [
-          "Zigbee2MQTT and Mosquitto provide an additional device-integration layer for Zigbee-based smart-home hardware.",
-          "Zigbee2MQTT translates Zigbee device communication into MQTT messages, while Mosquitto provides the MQTT messaging layer used by supporting services.",
-          "This allows Zigbee devices to participate in Home Assistant automations without requiring every device to depend on a vendor cloud platform.",
+          "Zigbee2MQTT provides an integration layer for Zigbee-based smart-home devices.",
+          "It translates Zigbee device communication into MQTT messages that can be consumed by Home Assistant and other supporting services.",
+          "This reduces dependence on separate vendor-specific cloud hubs and provides greater local control over supported Zigbee devices.",
         ],
       },
       {
-        title: "Network Segmentation",
+        title: "Mosquitto MQTT",
         content: [
-          "Smart-home devices operate within the broader VLAN and firewall architecture rather than being placed on one unrestricted network.",
-          "IoT devices are isolated from trusted endpoints and infrastructure services unless specific communication paths are required.",
-          "Home Assistant, bridges, and supporting services can therefore communicate with smart-home devices through controlled network paths while unnecessary lateral access remains restricted.",
-          "This allows the smart-home environment to remain functional without treating every IoT device as a trusted endpoint.",
+          "Mosquitto provides the MQTT messaging broker used by Zigbee2MQTT and other event-driven integrations.",
+          "MQTT provides a lightweight publish-and-subscribe communication model that allows devices and services to exchange state and event information without requiring tightly coupled point-to-point integrations.",
+          "This makes the messaging layer reusable across multiple smart-home workflows.",
+        ],
+      },
+      {
+        title: "Camera Integration",
+        content: [
+          "The camera environment is kept on a dedicated Security Camera VLAN rather than sharing the same trust zone as general-purpose user devices.",
+          "Scrypted and supporting services provide controlled integration between the camera environment and Apple HomeKit.",
+          "This allows camera functionality to be exposed where needed without making the camera network broadly accessible to the rest of the environment.",
+        ],
+      },
+      {
+        title: "IoT Network Segmentation",
+        content: [
+          "Smart-home and IoT devices operate inside the broader VLAN and firewall architecture rather than being placed on a single unrestricted home network.",
+          "IoT devices are isolated from trusted endpoints and infrastructure services unless a specific communication path is required.",
+          "Home Assistant and bridge services can therefore communicate with smart-home devices through controlled network rules while unnecessary lateral access remains restricted.",
+          "The design recognizes that convenience devices should not automatically receive the same level of trust as laptops, infrastructure systems, or administrative endpoints.",
         ],
       },
       {
         title: "Automation Strategy",
         content: [
-          "Automations are divided between simple Apple Home routines and more advanced Home Assistant workflows.",
-          "Apple Home is useful for straightforward user-facing automations and scenes.",
-          "Home Assistant is used where automations require multiple conditions, cross-platform integrations, network awareness, complex logic, or deeper control over supporting infrastructure.",
-          "The goal is to use the simplest platform that can reliably implement the desired behavior rather than forcing every automation into one system.",
+          "Simple user-facing routines and scenes can remain within Apple Home where that provides the easiest experience.",
+          "Home Assistant is used where automations require multiple conditions, cross-platform integrations, more complex logic, or deeper interaction with supporting services.",
+          "The goal is to use the simplest platform capable of reliably implementing a particular automation rather than forcing every workflow into one tool.",
         ],
       },
       {
-        title: "Design Philosophy",
+        title: "Local Control & Resilience",
         content: [
-          "The overall goal is to keep the user experience simple while allowing the underlying architecture to remain flexible, secure, and vendor-agnostic where practical.",
-          "Apple HomeKit provides the polished user-facing control layer, while Home Assistant, Homebridge, Scrypted, Zigbee2MQTT, Mosquitto, and the segmented network provide the deeper integration platform behind it.",
-          "This creates a layered smart-home architecture in which usability does not require abandoning network segmentation, security, or infrastructure control.",
+          "A major design goal is to keep as much smart-home functionality local as practical.",
+          "Local platforms such as Home Assistant, Homebridge, Zigbee2MQTT, Mosquitto, and Scrypted reduce unnecessary dependence on vendor cloud services for core integrations.",
+          "Local control also improves the ability to troubleshoot dependencies and integrate smart-home behavior with the rest of the home-lab infrastructure.",
+        ],
+      },
+      {
+        title: "HomeKit Design Philosophy",
+        content: [
+          "The user experience should remain straightforward even if the infrastructure behind it is sophisticated.",
+          "Apple HomeKit provides the polished user-facing control layer, while Home Assistant and supporting services provide deeper compatibility, automation, messaging, and integration.",
+          "The result is a layered smart-home architecture that prioritizes usability without abandoning segmentation, local control, and infrastructure security.",
         ],
       },
     ],
