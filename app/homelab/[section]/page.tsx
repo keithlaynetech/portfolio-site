@@ -1341,6 +1341,19 @@ export default async function HomeLabSectionPage({
 
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
+            <Link
+              href="/homelab"
+              className="font-semibold text-blue-600 hover:text-blue-500"
+            >
+              ← Back to Home Lab
+            </Link>
+
+            <span className="text-slate-300">/</span>
+
+            <span className="text-slate-500">{data.title}</span>
+          </div>
+
           <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
             Home Lab
           </p>
