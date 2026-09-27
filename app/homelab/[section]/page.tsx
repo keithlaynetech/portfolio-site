@@ -16,6 +16,22 @@ const homelabData = {
         ],
       },
       {
+        title: "Physical Infrastructure",
+        content: [
+          "The home lab is centralized in a 24U floor rack located in an upstairs guest-bedroom closet.",
+          "The builder originally provided only a small in-wall structured wiring cabinet, which was not large enough for the infrastructure the environment eventually required.",
+          "To create a proper central distribution point, new fiber was run to the guest-bedroom closet and the space was converted into the primary home-lab and Ethernet aggregation location.",
+          "Cat6A cabling was personally installed, terminated, crimped, and distributed throughout the house to provide dedicated wired connectivity to rooms, access points, cameras, switches, and infrastructure devices.",
+          "SFP+ connectivity is used between core networking components to provide a faster backbone for east-west traffic between switching, compute, storage, and other infrastructure services.",
+          "The rack contains the core network, compute, and storage platforms, including the UniFi gateway and switching environment, three Minisforum MS-01 systems, two Beelink EQ14 systems, and the Ubiquiti UNAS Pro.",
+          "The UniFi switching environment includes a USW 16 PoE, USW Aggregation, USW Pro Max 24 PoE, and smaller access switches serving areas such as the family room and office.",
+          "Wireless coverage is provided through multiple UniFi access points, including two U6-LR units and two U6 Lite-class access points distributed through the house.",
+          "The current camera environment includes six UniFi cameras: four PoE cameras and two wireless cameras. The roadmap includes adding two additional wired cameras and two additional wireless cameras.",
+          "Centralizing the infrastructure in a dedicated rack created a much cleaner physical topology than attempting to expand the original builder-installed cabinet and provides room for future network, storage, compute, and power improvements.",
+        ],
+      },
+
+      {
         title: "Network Design",
         content: [
           "The network is built around a redundant pair of UniFi Dream Machine Pro gateways configured in an active/passive failover model.",
@@ -149,12 +165,14 @@ const homelabData = {
         ],
       },
       {
-        title: "DNS Architecture",
+        title: "DNS Architecture & Enforcement",
         content: [
           "DNS is provided through AdGuard Home and Unbound rather than relying solely on the network gateway or an external resolver.",
           "AdGuard Home provides DNS filtering, client visibility, local naming, DNS rewrites, and policy capabilities.",
-          "Unbound provides recursive DNS resolution.",
-          "This separates DNS policy from DNS resolution and provides greater control over internal application naming.",
+          "Unbound provides recursive DNS resolution behind AdGuard Home.",
+          "Client devices are not allowed to bypass the local DNS architecture. Network policy forces clients to use the approved DNS path rather than allowing arbitrary external DNS resolvers.",
+          "This gives DNS policy a consistent enforcement point across the segmented environment and prevents a client from avoiding filtering simply by manually selecting another resolver.",
+          "The design separates DNS policy from recursive resolution while keeping DNS behavior centrally controlled across the VLAN architecture.",
         ],
       },
       {
@@ -342,6 +360,60 @@ const homelabData = {
           "Persistent mount configuration therefore became part of the operational design.",
         ],
       },
+      {
+        title: "Proxmox Operational Model",
+        content: [
+          "Proxmox is operated as an infrastructure platform rather than as a collection of independent servers.",
+          "Cluster membership, host health, storage availability, network connectivity, workload placement, and maintenance state are treated as shared operational concerns across the five-node environment.",
+          "Routine administration includes validating node health, checking resource pressure, reviewing storage connectivity, confirming virtual-network access, and understanding which workloads depend on each host before maintenance is performed.",
+          "The goal is to make host maintenance predictable and to reduce the chance that a change to one node unintentionally affects unrelated services.",
+        ],
+      },
+      {
+        title: "VM & LXC Provisioning",
+        content: [
+          "Virtual machines and LXC containers are selected according to workload requirements rather than by a single standard for every service.",
+          "Full virtual machines are preferred when a workload requires stronger isolation, its own kernel behavior, specialized networking, or more predictable compatibility.",
+          "LXC containers are used for lighter-weight Linux services where shared-kernel operation is appropriate and the lower resource overhead provides a practical benefit.",
+          "As the platform matures, repeatable base images and templates can be used to reduce manual provisioning and standardize common Linux configurations.",
+          "The WireGuard migration from an unprivileged LXC container to a dedicated Debian VM is a practical example of choosing operational reliability over minimum resource usage.",
+        ],
+      },
+      {
+        title: "Workload Lifecycle & Maintenance",
+        content: [
+          "Workload lifecycle management includes provisioning, configuration, patching, restart behavior, storage dependencies, networking, backup considerations, and eventual retirement.",
+          "Before a Proxmox host is maintained, the workloads on that host are reviewed so application impact and dependencies are understood.",
+          "The multi-node architecture makes it possible to distribute workloads so maintenance does not automatically become an all-or-nothing event for the entire environment.",
+          "Persistent storage mounts and network dependencies are part of the maintenance checklist because an application is not healthy merely because its VM or container has restarted.",
+        ],
+      },
+      {
+        title: "Templates, Cloning & Standardization",
+        content: [
+          "A key operational direction is to standardize common deployments through reusable VM templates, container baselines, Docker Compose definitions, and version-controlled configuration.",
+          "The goal is to reduce one-off builds and make it easier to recreate a workload from a known baseline.",
+          "This work connects directly to the Infrastructure as Code roadmap, where provisioning and configuration can progressively move from manual steps into repeatable definitions stored in Git.",
+        ],
+      },
+      {
+        title: "Snapshots, Backups & Recovery Operations",
+        content: [
+          "Snapshots and backups are treated as operational tools rather than substitutes for a broader disaster-recovery strategy.",
+          "Snapshots can be useful before significant changes or upgrades, while backups protect the ability to recover a workload after corruption, failed changes, or host-level problems.",
+          "A more formal backup and disaster-recovery architecture, including retention, restore testing, and off-site protection, is intentionally being developed as a later phase of the lab roadmap.",
+        ],
+      },
+      {
+        title: "Cluster Maintenance & Quorum",
+        content: [
+          "The five-node cluster provides practical experience with quorum, node membership, cluster communication, and distributed decision making.",
+          "An odd-numbered five-node cluster provides a clear majority model when determining cluster state.",
+          "Operational maintenance therefore includes preserving healthy cluster communication and avoiding changes that would unnecessarily reduce the number of available voting members.",
+          "Proxmox High Availability is still a future project; cluster quorum and multi-node operation should not be interpreted as automatic workload failover.",
+        ],
+      },
+
       {
         title: "Compute Design Philosophy",
         content: [
@@ -990,9 +1062,10 @@ const homelabData = {
       {
         title: "Infrastructure as Code",
         content: [
-          "Infrastructure as Code is part of the upcoming roadmap rather than a completed capability.",
-          "The goal is to move more configuration into repeatable, version-controlled definitions using technologies such as Ansible, Terraform or OpenTofu, Docker Compose, GitHub Actions, and supporting scripts.",
-          "This would reduce configuration drift, improve reproducibility, and make infrastructure changes easier to review before implementation.",
+          "Infrastructure as Code is one of the primary next-stage capabilities for the lab rather than a completed feature.",
+          "The planned workflow uses GitHub for version control and change history, Ansible for configuration management, Terraform or OpenTofu for declarative infrastructure provisioning, Docker Compose for repeatable application stacks, and GitHub Actions for CI/CD orchestration.",
+          "The goal is to replace more one-off manual changes with repeatable definitions that can be reviewed, tested, documented, and reproduced.",
+          "Operational repositories will remain private where they contain internal network details, while public repositories will be sanitized for portfolio use. Secrets will remain outside source control.",
         ],
       },
       {
@@ -1018,7 +1091,7 @@ const homelabData = {
   homekit: {
     title: "Apple HomeKit",
     description:
-      "An Apple-centric smart home environment integrating HomeKit, Home Assistant, Homebridge, Scrypted, Zigbee2MQTT, Mosquitto, and segmented IoT networking.",
+      "An Apple-centric smart home environment integrating HomeKit, Home Assistant, Homebridge, Scrypted, Zigbee2MQTT, Mosquitto, connected devices, and real-world automations designed to make daily life simpler and safer.",
     sections: [
       {
         title: "Smart Home Architecture",
@@ -1027,6 +1100,26 @@ const homelabData = {
           "Apple HomeKit provides the primary user-facing experience, while Home Assistant provides broader integration, automation, and infrastructure-level control behind the scenes.",
           "Homebridge, Scrypted, Zigbee2MQTT, and Mosquitto extend compatibility and allow devices from different ecosystems to participate in a common smart-home environment.",
           "This approach keeps the user experience simple while allowing the underlying system to remain flexible and more vendor-independent.",
+        ],
+      },
+      {
+        title: "Connected HomeKit Devices",
+        content: [
+          "The Apple Home environment brings together devices from multiple manufacturers into one user-facing control and automation layer.",
+          "Rather than requiring every device to come from a single vendor, Home Assistant, Homebridge, Scrypted, and native HomeKit integrations allow the environment to combine different ecosystems while presenting them consistently through Apple Home.",
+          "Lighting — Lutron Caseta smart switches provide control of primary household lighting through HomeKit.",
+          "Night Lights — Aqara-connected night lights provide automated low-level hallway and nighttime lighting.",
+          "Door Locks — Aqara and August smart locks provide HomeKit-connected door access, remote status, automation, and proximity-based locking and unlocking.",
+          "Thermostats — Ecobee thermostats provide climate control and temperature management through Apple Home.",
+          "Security Cameras — Ubiquiti cameras are integrated into the Apple ecosystem through the smart-home infrastructure, allowing camera events and video to surface on Apple devices.",
+          "Lamps — Aqara-connected devices provide HomeKit control of lamps and accent lighting.",
+          "Garage Doors — Garage-door status and control are incorporated into HomeKit automations, including the Good Night routine that verifies and closes the garage doors.",
+          "Security System — The home alarm system participates in HomeKit automation so security can be armed as part of household routines.",
+          "Water Leak Sensors & Shutoff Valve — Water sensors monitor for leaks and can trigger the home's automated water shutoff valve.",
+          "Door & Contact Sensors — Contact sensors are used for safety and awareness automations, including bedroom-door and freezer-door monitoring.",
+          "Window Shades — Motorized shades are integrated into scheduled HomeKit routines for automatic opening and closing.",
+          "Air Purifiers — Connected air purifiers are controlled through scheduled smart-home routines.",
+          "Apple TV and Apple devices also act as important presentation and notification endpoints, allowing camera events, alerts, and smart-home status to surface where the family is already interacting with the Apple ecosystem.",
         ],
       },
       {
@@ -1096,6 +1189,21 @@ const homelabData = {
         ],
       },
       {
+        title: "Automation for Everyday Life",
+        content: [
+          "The most useful automations in the house are not designed simply to demonstrate smart-home technology. They are intended to remove small daily tasks, improve safety, and reduce the number of things the family has to remember.",
+          "Good Night — Saying “Hey Siri, good night” starts a coordinated nighttime routine. The doors lock, garage doors close, the alarm is armed, most of the house lights turn off, bedroom lighting remains available, and night lights illuminate the hallways.",
+          "Water Leak Protection — If a water leak is detected, the household is notified and the automated water valve shuts off the home's water supply. The goal is to move beyond simply detecting a leak and automatically take action to limit potential damage.",
+          "Freezer Left Open — If a freezer remains open for more than five minutes, lights throughout the house cycle on and off. The highly visible alert makes it difficult for someone to miss the warning even if a phone notification is ignored.",
+          "Nighttime Bedroom Door Alert — If my daughter's bedroom door opens after 11 PM, the lamps in our bedroom cycle on and off three times in green. This provides an immediate visual warning if she gets out of bed late at night, including situations where she may be sleepwalking.",
+          "Package Detection — When a package is detected at the front door, an audible notification is played inside the house so the family knows a delivery has arrived without needing to check a phone.",
+          "Camera Motion Alerts — Cameras covering the doors, yards, and driveways generate motion alerts and video clips. Notifications can appear on phones and Apple TV, making the security system visible across the Apple ecosystem.",
+          "Automated Window Shades — Window shades automatically open and close according to schedule, eliminating another repetitive daily household task.",
+          "Scheduled Air Purification — Air purifiers automatically turn on and off according to schedule so air-quality devices operate without requiring manual control each day.",
+          "Proximity-Based Door Access — Supported smart locks can automatically lock or unlock based on proximity and credentials stored in Apple Wallet, reducing the need to carry or manually use a physical key.",
+        ],
+      },
+      {
         title: "Automation Strategy",
         content: [
           "Simple user-facing routines and scenes can remain within Apple Home where that provides the easiest experience.",
@@ -1155,11 +1263,23 @@ const homelabData = {
         ],
       },
       {
+        title: "Kubernetes / K3s Lab",
+        content: [
+          "Kubernetes is planned as a future learning and infrastructure project rather than a current production dependency.",
+          "The initial goal is to build a small K3s cluster on top of the existing Proxmox environment and gain practical experience with container orchestration, service discovery, ingress, persistent storage, cluster networking, and application resiliency.",
+          "The project can later incorporate Helm, Git-based deployment workflows, observability, and controlled CI/CD integration.",
+          "Kubernetes will be introduced because it adds useful orchestration and platform-engineering experience, not because the current Docker-based services require unnecessary migration.",
+        ],
+      },
+
+      {
         title: "Infrastructure as Code",
         content: [
-          "A future project will move more infrastructure configuration into version-controlled and repeatable deployment models.",
-          "Potential technologies include Ansible, Terraform or OpenTofu, Docker Compose, GitHub Actions, and supporting automation scripts.",
-          "Public repositories will contain sanitized examples and documentation while operational configuration containing internal addressing, ports, hostnames, or other sensitive topology information will remain private.",
+          "Infrastructure as Code is a major part of the next phase of the lab rather than a minor tooling exercise.",
+          "The target operating model is GitHub as the source-control and change-history layer, Ansible for configuration management, Terraform or OpenTofu for declarative infrastructure provisioning, Docker Compose for repeatable application stacks, and GitHub Actions for controlled CI/CD workflows.",
+          "The objective is to reduce manual configuration, improve repeatability, make changes reviewable, and create a clear path from documented intent to deployed infrastructure.",
+          "Public repositories will contain sanitized examples and portfolio documentation, while operational configuration containing internal addressing, ports, hostnames, topology mappings, or other sensitive environment details will remain private.",
+          "Passwords, API tokens, private keys, and other secrets will not be committed to Git repositories.",
         ],
       },
       {
@@ -1197,23 +1317,25 @@ export default async function HomeLabSectionPage({
   return (
     <main className="min-h-screen bg-white text-slate-900">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-xl font-bold">
+        <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-6 py-5">
+          <Link href="/" className="justify-self-start text-xl font-bold tracking-tight">
             Keith Layne
           </Link>
 
-          <div className="flex items-center gap-6">
+          <nav className="hidden items-center gap-8 text-sm text-slate-600 md:flex">
+            <Link href="/" className="hover:text-blue-600">Home</Link>
+            <Link href="/about" className="hover:text-blue-600">About</Link>
+            <Link href="/resume" className="hover:text-blue-600">Resume</Link>
             <Link
               href="/homelab"
-              className="text-sm font-semibold text-blue-600 hover:text-blue-500"
+              className="border-b-2 border-blue-600 pb-1 font-semibold text-blue-600"
             >
-              ← Home Lab
+              Home Lab
             </Link>
+            <Link href="/contact" className="hover:text-blue-600">Contact</Link>
+          </nav>
 
-            <Link href="/" className="text-sm text-slate-500 hover:text-blue-600">
-              Main Site
-            </Link>
-          </div>
+          <div className="justify-self-end" />
         </div>
       </header>
 
@@ -1229,21 +1351,62 @@ export default async function HomeLabSectionPage({
         </div>
       </section>
 
+      {/* OVERVIEW DESIGN GOALS */}
       {section === "overview" && (
-        <section className="mx-auto max-w-7xl px-6 pt-12">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-lg">
-            <img
-              src="/network-architecture.png"
-              alt="Home Lab Network Architecture"
-              className="w-full object-contain"
-            />
+        <section className="mx-auto max-w-5xl px-6 pt-12">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-8 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">
+              Design Goals
+            </p>
+
+            <h2 className="mt-3 text-2xl font-bold text-slate-900">
+              Build a small infrastructure environment around enterprise principles.
+            </h2>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                ["Security & Segmentation", "Separate trust zones and allow only the communication that is required."],
+                ["Reliability", "Reduce single points of failure and design services around predictable operations."],
+                ["Local Control & Privacy", "Keep core services and personal data under local control where practical."],
+                ["Automation", "Replace repetitive manual work with repeatable, observable workflows."],
+                ["Recoverability", "Design systems so configuration and data can be restored rather than merely kept running."],
+                ["Continuous Learning", "Use the lab to develop practical skills in infrastructure, DevOps, observability, security, and AI."],
+              ].map(([title, description]) => (
+                <div key={title} className="rounded-xl border border-blue-100 bg-white p-5">
+                  <h3 className="font-semibold text-slate-900">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="mt-3 text-center text-sm text-slate-500">
-            High-level architecture of the compute, network, storage, security,
-            and application environment.
-          </p>
         </section>
       )}
+
+      {/* SECTION ARCHITECTURE DIAGRAMS */}
+      {[
+        ["overview", "/overview-architecture.png", "Home Lab Architecture Overview"],
+        ["network", "/network-architecture.png", "Network Architecture"],
+        ["compute", "/compute-architecture.png", "Compute Platform Architecture"],
+        ["storage", "/storage-architecture.png", "Storage Architecture"],
+        ["applications", "/applications-ecosystem.png", "Application Ecosystem"],
+        ["monitoring", "/monitoring-stack.png", "Monitoring Stack"],
+        ["observability", "/observability-architecture.png", "Observability Architecture"],
+        ["automation", "/automation-ai-workflow.png", "Automation and AI Workflow"],
+        ["homekit", "/homekit-architecture.png", "Apple HomeKit and Smart Home Architecture"],
+      ]
+        .filter(([key]) => key === section)
+        .map(([key, src, alt]) => (
+          <section
+            key={key}
+            className={`mx-auto px-6 pt-12 ${
+              key === "overview" ? "max-w-5xl" : "max-w-7xl"
+            }`}
+          >
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+              <img src={src} alt={alt} className="w-full object-contain" />
+            </div>
+          </section>
+        ))}
 
       {section === "network" && (
         <section className="mx-auto max-w-5xl px-6 pt-12">
@@ -1252,9 +1415,9 @@ export default async function HomeLabSectionPage({
               Core Architecture
             </p>
             <div className="space-y-3 font-mono text-sm leading-7 text-slate-700">
-              <p>AT&T Fiber</p>
+              <p>AT&amp;T Fiber</p>
               <p className="pl-6">↓</p>
-              <p>AT&T BGW320</p>
+              <p>AT&amp;T BGW320</p>
               <p className="pl-6">↓</p>
               <p>UDM Pro Active / Passive Gateway Pair</p>
               <p className="pl-6">↓</p>
@@ -1262,9 +1425,7 @@ export default async function HomeLabSectionPage({
               <p className="pl-6">↓</p>
               <p>Managed UniFi Switching</p>
               <p className="pl-6">↓</p>
-              <p>
-                Proxmox • UNAS Pro • Wireless • Cameras • IoT • Trusted Clients
-              </p>
+              <p>Proxmox • UNAS Pro • Wireless • Cameras • IoT • Trusted Clients</p>
             </div>
           </div>
         </section>
@@ -1334,9 +1495,7 @@ export default async function HomeLabSectionPage({
                   Protection
                 </p>
                 <p className="mt-3 text-2xl font-bold">RAID 5</p>
-                <p className="mt-2 text-sm text-slate-500">
-                  Single-drive fault tolerance
-                </p>
+                <p className="mt-2 text-sm text-slate-500">Single-drive fault tolerance</p>
               </div>
             </div>
           </div>
