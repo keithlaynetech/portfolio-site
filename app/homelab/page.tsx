@@ -105,6 +105,11 @@ const upcomingProjects = [
       "Build a read-oriented AI assistant that understands the lab and can surface operational insight.",
   },
   {
+    title: "Kubernetes / K3s Lab",
+    description:
+      "Build a lightweight Kubernetes environment on Proxmox to learn orchestration, service networking, persistent storage, Helm, and GitOps.",
+  },
+  {
     title: "Infrastructure as Code",
     description:
       "Expand Ansible, Terraform/OpenTofu, Docker Compose, and GitHub-based automation.",
